@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 
-
 # Jingju Singing Analysis is a collection of tools for automatically extracting
 # statistical and quantitative information from the Jingju Music Scores
 # Collection (http://doi.org/10.5281/zenodo.1464653).
@@ -22,13 +21,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 import numpy as np
 import sys
 import matplotlib.pyplot as plt
 from music21 import *
 import fractions
-
 
 
 ###############################################################################
@@ -39,8 +36,8 @@ def collectLineMaterial(linesData,
                         hangdang=['laosheng', 'dan'],
                         shengqiang=['erhuang', 'xipi'],
                         banshi=['manban', 'sanyan', 'zhongsanyan',
-                                  'kuaisanyan', 'yuanban', 'erliu', 'liushui',
-                                  'kuaiban'],
+                                'kuaisanyan', 'yuanban', 'erliu', 'liushui',
+                                'kuaiban'],
                         judou=['s', 's1', 's2', 'x']):
     '''
     Given the path to the lines_data.csv file, that should be stored in the
@@ -115,14 +112,13 @@ def collectLineMaterial(linesData,
         path = path.replace('\\', '/')
 
     with open(linesData, 'r', encoding='utf-8') as f:
-        data = f.readlines()
-
+        data = f.readlines()[1:]
     material = []
 
     found_lines = 0
 
     # Search information
-    searchInfo = {'hd':[], 'sq':[], 'bs':[], 'ju':[]}
+    searchInfo = {'hd': [], 'sq': [], 'bs': [], 'ju': []}
     material.append(searchInfo)
 
     # Segments collection
@@ -130,8 +126,9 @@ def collectLineMaterial(linesData,
         strInfo = line.strip().split(',')
         score = strInfo[0]
         if score != '':
-            material.append([path+score,[]])
-            if 'Part 1' in line: continue
+            material.append([path+score, []])
+            if 'Part 1' in line:
+                continue
 
         if (score == '') and ('Part' in line):
             material[-1].append([])
@@ -176,7 +173,6 @@ def collectLineMaterial(linesData,
             material.pop(l)
 
     return material
-
 
 
 def collectLineJudouMaterial(linesData,
@@ -270,7 +266,7 @@ def collectLineJudouMaterial(linesData,
     found_lines = 0
 
     # Search information
-    searchInfo = {'hd':[], 'sq':[], 'bs':[], 'ju':[]}
+    searchInfo = {'hd': [], 'sq': [], 'bs': [], 'ju': []}
     material.append(searchInfo)
 
     # Segments collection
@@ -278,8 +274,9 @@ def collectLineJudouMaterial(linesData,
         strInfo = line.strip().split(',')
         score = strInfo[0]
         if score != '':
-            material.append([path+score,[]])
-            if 'Part 1' in line: continue
+            material.append([path+score, []])
+            if 'Part 1' in line:
+                continue
 
         if (score == '') and ('Part' in line):
             material[-1].append([])
@@ -346,7 +343,6 @@ def collectLineJudouMaterial(linesData,
     return material
 
 
-
 ###############################################################################
 ## MAIN FUNCTIONS                                                            ##
 ###############################################################################
@@ -354,9 +350,9 @@ def collectLineJudouMaterial(linesData,
 def pitchHistogram(linesData,
                    hd=['laosheng', 'dan'],
                    sq=['erhuang', 'xipi'],
-                   bs = ['manban', 'sanyan', 'zhongsanyan','kuaisanyan',
-                         'yuanban', 'erliu', 'liushui', 'kuaiban'],
-                   ju = ['s', 's1', 's2', 'x'],
+                   bs=['manban', 'sanyan', 'zhongsanyan', 'kuaisanyan',
+                       'yuanban', 'erliu', 'liushui', 'kuaiban'],
+                   ju=['s', 's1', 's2', 'x'],
                    filename=None,
                    count='sum',
                    countGraceNotes=True,
@@ -455,7 +451,8 @@ def pitchHistogram(linesData,
         parts = findVoiceParts(loadedScore)
         # Work with each part
         for partIndex in range(1, len(score)):
-            if len(score[partIndex]) == 0: continue # Skip part if it's empty
+            if len(score[partIndex]) == 0:
+                continue  # Skip part if it's empty
             # Get the notes from the current part
             part = parts[partIndex-1]
             notes = part.flat.notes.stream()
@@ -465,7 +462,7 @@ def pitchHistogram(linesData,
                 minDur = 0.25
                 for n in notes:
                     noteDur = n.quarterLength
-                    if noteDur!=0 and noteDur<minDur:
+                    if noteDur != 0 and noteDur < minDur:
                         minDur = noteDur
 
             # Find segments to analyze in the current part
@@ -478,7 +475,8 @@ def pitchHistogram(linesData,
                     noteName = n.nameWithOctave
                     noteDur = n.quarterLength
                     if noteDur == 0:
-                        if not countGraceNotes: continue
+                        if not countGraceNotes:
+                            continue
                         noteDur = minDur
                     pitchCount[noteName] = pitchCount.get(noteName, 0)+noteDur
 
@@ -486,14 +484,15 @@ def pitchHistogram(linesData,
 
     # Sorting duration per pitch class frequency
     pitches = pitchCount.keys()
-    toSort = {p:pitch.Pitch(p).midi for p in pitches}
+    toSort = {p: pitch.Pitch(p).midi for p in pitches}
     sortedPitches = sorted(toSort.items(), key=lambda x: x[1])
     xPositions = np.array([p[1] for p in sortedPitches])
     xLabels = [p[0] for p in sortedPitches]
     yValues = np.array([pitchCount[l] for l in xLabels])
 
     # Setting the parameters for plotting
-    yValues, limX, yLabel, col, h = plottingParameters(material,count,yValues)
+    yValues, limX, yLabel, col, h = plottingParameters(
+        material, count, yValues)
 
     if filename != None:
         # Start plotting
@@ -521,14 +520,13 @@ def pitchHistogram(linesData,
     return results
 
 
-
 def pitchHistogramLineJudou(linesData,
                             hd=['laosheng', 'dan'],
                             sq=['erhuang', 'xipi'],
-                            bs = ['manban', 'sanyan', 'zhongsanyan',
-                                  'kuaisanyan', 'yuanban', 'erliu', 'liushui',
-                                  'kuaiban'],
-                            ju = ['s', 's1', 's2', 'x'],
+                            bs=['manban', 'sanyan', 'zhongsanyan',
+                                'kuaisanyan', 'yuanban', 'erliu', 'liushui',
+                                'kuaiban'],
+                            ju=['s', 's1', 's2', 'x'],
                             filename=None, count='sum',
                             countGraceNotes=True,
                             scaleGuides=True,
@@ -539,7 +537,6 @@ def pitchHistogramLineJudou(linesData,
                             yticks_fontsize=15,
                             xLabel_fontsize=26,
                             yLabel_fontsize=26):
-
     '''
     Given the path to the lines_data.csv file, that should be stored in the
     same folder as the MusicXML scores of the Jingju Music Scores Collection,
@@ -655,7 +652,8 @@ def pitchHistogramLineJudou(linesData,
         parts = findVoiceParts(loadedScore)
         # Work with each part
         for partIndex in range(1, len(score)):
-            if len(score[partIndex]) == 0: continue # Skip part if it's empty
+            if len(score[partIndex]) == 0:
+                continue  # Skip part if it's empty
             # Get the notes from the current part
             part = parts[partIndex-1]
             notes = part.flat.notes.stream()
@@ -665,13 +663,14 @@ def pitchHistogramLineJudou(linesData,
                 minDur = 0.25
                 for n in notes:
                     noteDur = n.quarterLength
-                    if noteDur!=0 and noteDur<minDur:
+                    if noteDur != 0 and noteDur < minDur:
                         minDur = noteDur
 
             # Find segments to analyze in the current part
             for line in score[partIndex]:
                 for judou in range(len(line)):
-                    if len(line[judou]) == 0: continue
+                    if len(line[judou]) == 0:
+                        continue
                     start = line[judou][0]
                     end = line[judou][1]
                     segment = notes.getElementsByOffset(start, end)
@@ -680,7 +679,8 @@ def pitchHistogramLineJudou(linesData,
                         noteName = n.nameWithOctave
                         noteDur = n.quarterLength
                         if noteDur == 0:
-                            if not countGraceNotes: continue
+                            if not countGraceNotes:
+                                continue
                             noteDur = minDur
                         if judou == 0:
                             j1p[noteName] = j1p.get(noteName, 0) + noteDur
@@ -689,7 +689,7 @@ def pitchHistogramLineJudou(linesData,
                         elif judou == 2:
                             j3p[noteName] = j3p.get(noteName, 0) + noteDur
                         else:
-                            print('There is a problem with the number of '\
+                            print('There is a problem with the number of '
                                   'judou in this line')
                             break
 
@@ -703,7 +703,7 @@ def pitchHistogramLineJudou(linesData,
     for jp in jps:
         # Sorting duration per pitch class frequency
         pitches = jp.keys()
-        toSort = {p:pitch.Pitch(p).midi for p in pitches}
+        toSort = {p: pitch.Pitch(p).midi for p in pitches}
         for pk in toSort.keys():
             if pk not in pre_yLab_general:
                 pre_yLab_general.append(pk)
@@ -714,15 +714,15 @@ def pitchHistogramLineJudou(linesData,
 
         # Setting the parameters for plotting for first judou
         xValues, limY, xLabel, col, h = plottingParameters(material, count,
-                                                            xValues)
+                                                           xValues)
 
         jps_plotting.append({'xValues': xValues, 'xLabel': xLabel,
                             'yPositions': yPositions, 'yLabels': yLabels,
-                            'limY': limY, 'col': col,
-                            'h': h})
+                             'limY': limY, 'col': col,
+                             'h': h})
 
     # Y axis labels for the three histograms
-    toSort = {p:pitch.Pitch(p).midi for p in pre_yLab_general}
+    toSort = {p: pitch.Pitch(p).midi for p in pre_yLab_general}
     sortedPitches = sorted(toSort.items(), key=lambda x: x[1])
     yPos_general = np.array([p[1] for p in sortedPitches])
     yLab_general = [p[0] for p in sortedPitches]
@@ -753,12 +753,12 @@ def pitchHistogramLineJudou(linesData,
             jp = jps_plotting[i]
             plt.subplot(131+i)
             plt.barh(jp['yPositions'], jp['xValues'], width, linewidth=0,
-                     zorder=1, color = jp['col'], hatch = jp['h'])
-            plt.axhline(y=64+width/2, color='red', zorder=0) # Tonic line
-            plt.axhline(y=76+width/2, color='red', ls='--', zorder=0) # 8ve
-            plt.axhline(y=59+width/2, color='gray', ls=':', zorder=0) # Fifth
-            plt.axhline(y=71+width/2, color='gray', ls=':', zorder=0) # Fifth
-            plt.axhline(y=83+width/2, color='gray', ls=':', zorder=0) # Fifth
+                     zorder=1, color=jp['col'], hatch=jp['h'])
+            plt.axhline(y=64+width/2, color='red', zorder=0)  # Tonic line
+            plt.axhline(y=76+width/2, color='red', ls='--', zorder=0)  # 8ve
+            plt.axhline(y=59+width/2, color='gray', ls=':', zorder=0)  # Fifth
+            plt.axhline(y=71+width/2, color='gray', ls=':', zorder=0)  # Fifth
+            plt.axhline(y=83+width/2, color='gray', ls=':', zorder=0)  # Fifth
             for xValue in jp['xValues']:
                 plt.axvline(x=xValue, color='gray', ls=':', zorder=0)
             if i == 0:
@@ -792,20 +792,19 @@ def pitchHistogramLineJudou(linesData,
         results.append(d)
 
     if not len(results[0]) == len(results[1]) == len(results[2]):
-        print('ERROR: There was a problem saving the results. The program '\
+        print('ERROR: There was a problem saving the results. The program '
               'will exit')
         exit()
 
     return results
 
 
-
 def intervalHistogram(linesData,
                       hd=['laosheng', 'dan'],
                       sq=['erhuang', 'xipi'],
-                      bs = ['manban', 'sanyan', 'zhongsanyan','kuaisanyan',
-                            'yuanban', 'erliu', 'liushui', 'kuaiban'],
-                      ju = ['s', 's1', 's2', 'x'],
+                      bs=['manban', 'sanyan', 'zhongsanyan', 'kuaisanyan',
+                          'yuanban', 'erliu', 'liushui', 'kuaiban'],
+                      ju=['s', 's1', 's2', 'x'],
                       filename=None,
                       count='sum',
                       directedInterval=False,
@@ -818,7 +817,6 @@ def intervalHistogram(linesData,
                       yticks_fontsize=18,
                       xLabel_fontsize=26,
                       yLabel_fontsize=26):
-
     '''
     Given the path to the lines_data.csv file, that should be stored in the
     same folder as the MusicXML scores of the Jingju Music Scores Collection,
@@ -911,7 +909,8 @@ def intervalHistogram(linesData,
         parts = findVoiceParts(loadedScore)
         # Work with each part
         for partIndex in range(1, len(score)):
-            if len(score[partIndex]) == 0: continue # Skip part if it's empty
+            if len(score[partIndex]) == 0:
+                continue  # Skip part if it's empty
             # Get the notes from the current part
             part = parts[partIndex-1]
             notes = part.flat.notesAndRests.stream()
@@ -930,9 +929,11 @@ def intervalHistogram(linesData,
 
                 for j in range(len(segment)-i):
                     n1 = segment[j]
-                    if n1.isRest: continue
+                    if n1.isRest:
+                        continue
                     if ignoreGraceNotes:
-                        if n1.quarterLength == 0: continue
+                        if n1.quarterLength == 0:
+                            continue
                     k = 1
                     while True:
                         n2 = segment[j+k]
@@ -942,11 +943,12 @@ def intervalHistogram(linesData,
                             else:
                                 n2 = None
                                 break
-                        elif (n2.quarterLength==0)and(ignoreGraceNotes==True):
+                        elif (n2.quarterLength == 0) and (ignoreGraceNotes == True):
                             j += 1
                         else:
                             break
-                    if n2==None: continue
+                    if n2 == None:
+                        continue
                     intvl = interval.Interval(n1, n2)
                     if directedInterval:
                         intvlName = intvl.directedName
@@ -959,19 +961,21 @@ def intervalHistogram(linesData,
 
     # Sorting intervals per size
     intvlNames = intervalCount.keys()
-    toSort = {i:interval.Interval(i).semitones for i in intvlNames}
+    toSort = {i: interval.Interval(i).semitones for i in intvlNames}
     sortedIntvl = sorted(toSort.items(), key=lambda x: x[1])
     xPositions = np.array([i[1] for i in sortedIntvl])
     # Check if there repeated positions
     for i in range(1, len(xPositions)):
-        if xPositions[i] != xPositions[i-1]: continue
+        if xPositions[i] != xPositions[i-1]:
+            continue
         for j in range(i):
             xPositions[j] += -1
     xLabels = [i[0] for i in sortedIntvl]
     yValues = np.array([intervalCount[l] for l in xLabels])
 
-    ## Setting the parameters for plotting
-    yValues, limX, yLabel, col, h = plottingParameters(material,count,yValues)
+    # Setting the parameters for plotting
+    yValues, limX, yLabel, col, h = plottingParameters(
+        material, count, yValues)
 
     if filename != None:
         # Start plotting
@@ -989,7 +993,7 @@ def intervalHistogram(linesData,
                 limY = [0, 0.5]
 
         plotting(filename, xPositions, xLabels, yValues, title=title,
-                 limX=limX, xLabel='Interval',limY=limY, yLabel=yLabel,
+                 limX=limX, xLabel='Interval', limY=limY, yLabel=yLabel,
                  col=col, h=h, width=width, title_fontsize=title_fontsize,
                  xticks_fontsize=xticks_fontsize,
                  yticks_fontsize=yticks_fontsize,
@@ -1004,12 +1008,11 @@ def intervalHistogram(linesData,
     return results
 
 
-
 def cadentialNotes(linesData,
                    hd=['laosheng', 'dan'],
                    sq=None,
-                   bs = ['manban', 'sanyan', 'zhongsanyan','kuaisanyan',
-                         'yuanban', 'erliu', 'liushui','kuaiban'],
+                   bs=['manban', 'sanyan', 'zhongsanyan', 'kuaisanyan',
+                       'yuanban', 'erliu', 'liushui', 'kuaiban'],
                    filename=None,
                    includeGraceNotes=True,
                    width=0.5,
@@ -1131,11 +1134,11 @@ def cadentialNotes(linesData,
     xLabels = ['S1', 'S2', 'S3']
     pos = np.arange(len(xLabels))
 
-    colors = {'G#3':['#F4D03F','x'],'B3':['#76D7C4','x'],'C#4':['#2E86C1','x'],
-              'C##4':['#5B2C6F','x'],'D#4':['#BB8FCE','x'],'E4':['#E74C3C',''],
-              'F#4':['#F39C12',''], 'G#4':['#F4D03F',''], 'A4':['#2ECC71',''],
-              'A#4':['#117864',''], 'B4':['#76D7C4',''], 'C#5':['#2E86C1',''],
-              'D#5':['#BB8FCE',''],'E5':['#E74C3C','O'],'F#5':['#F39C12','O']}
+    colors = {'G#3': ['#F4D03F', 'x'], 'B3': ['#76D7C4', 'x'], 'C#4': ['#2E86C1', 'x'],
+              'C##4': ['#5B2C6F', 'x'], 'D#4': ['#BB8FCE', 'x'], 'E4': ['#E74C3C', ''],
+              'F#4': ['#F39C12', ''], 'G#4': ['#F4D03F', ''], 'A4': ['#2ECC71', ''],
+              'A#4': ['#117864', ''], 'B4': ['#76D7C4', ''], 'C#5': ['#2E86C1', ''],
+              'D#5': ['#BB8FCE', ''], 'E5': ['#E74C3C', 'O'], 'F#5': ['#F39C12', 'O']}
 
     legendCode = {}
 
@@ -1158,21 +1161,20 @@ def cadentialNotes(linesData,
     plt.figure()
     for i in range(len(judous)):
         print('\nCounting cadential notes for ' + nice_names[i] + '...')
-        lt = titles[i] # lt: line type
+        lt = titles[i]  # lt: line type
         pre_result[lt] = {}
         result[lt] = {}
         sortedNoteNames, sortedValues = findCadentialNotes(linesData, hd, sq,
                                                            bs, [judous[i]],
-                                                           includeGraceNotes=\
-                                                           includeGraceNotes)
+                                                           includeGraceNotes=includeGraceNotes)
         print('Notes for ' + nice_names[i] + ' counted.')
 
         for j in range(len(xLabels)):
             sec = xLabels[j]
-            pre_result[lt][sec] = {} # sec: section
+            pre_result[lt][sec] = {}  # sec: section
             result[lt][sec] = []
             for k in range(len(sortedNoteNames)):
-                nn = sortedNoteNames[k] # note name
+                nn = sortedNoteNames[k]  # note name
                 pre_result[lt][sec][nn] = sortedValues[k][j]
 
         bot = np.array([0, 0, 0])
@@ -1182,7 +1184,7 @@ def cadentialNotes(linesData,
             val = sortedValues[l]
             colHatch = colors[sortedNoteNames[l]]
             p = plt.bar(pos, val, width, color=colHatch[0],
-                        hatch = colHatch[1], bottom=bot, align='center')
+                        hatch=colHatch[1], bottom=bot, align='center')
             bot = bot + val
             # Prepare the legend
             noteName = sortedNoteNames[l]
@@ -1223,13 +1225,12 @@ def cadentialNotes(linesData,
     return result
 
 
-
 def melodicDensity(linesData,
                    hd=['laosheng', 'dan'],
                    sq=['erhuang', 'xipi'],
-                   bs = ['manban', 'sanyan', 'zhongsanyan','kuaisanyan',
-                         'yuanban', 'erliu', 'liushui', 'kuaiban'],
-                   ju = ['s', 's1', 's2', 'x'],
+                   bs=['manban', 'sanyan', 'zhongsanyan', 'kuaisanyan',
+                       'yuanban', 'erliu', 'liushui', 'kuaiban'],
+                   ju=['s', 's1', 's2', 'x'],
                    filename=None,
                    includeGraceNotes=True,
                    notesOrDuration='notes',
@@ -1354,7 +1355,8 @@ def melodicDensity(linesData,
         parts = findVoiceParts(loadedScore)
         # Work with each part
         for partIndex in range(1, len(score)):
-            if len(score[partIndex]) == 0: continue # Skip part if it's empty
+            if len(score[partIndex]) == 0:
+                continue  # Skip part if it's empty
             # Get the notes from the current part
             part = parts[partIndex-1]
             notes = part.flat.notesAndRests.stream()
@@ -1371,18 +1373,21 @@ def melodicDensity(linesData,
                         value = 1
                     else:
                         value = n.quarterLength
-                    if n.isRest: continue
-                    if n.quarterLength==0:
-                        if not includeGraceNotes: continue
+                    if n.isRest:
+                        continue
+                    if n.quarterLength == 0:
+                        if not includeGraceNotes:
+                            continue
                         j = 1
-                        while (i+j<len(segment) and
-                               segment[i+j].quarterLength==0):
+                        while (i+j < len(segment) and
+                               segment[i+j].quarterLength == 0):
                             j += 1
-                        if i+j == len(segment): continue
+                        if i+j == len(segment):
+                            continue
                         n2 = segment[i+j]
                         if n2.hasLyrics():
                             if (('（' in n2.lyric) or ('）' in n2.lyric) or
-                                openParenthesis):
+                                    openParenthesis):
                                 localCount[-1] += value
                                 accumulatedCount[-1] += value
                             else:
@@ -1446,7 +1451,7 @@ def melodicDensity(linesData,
     limits = []
     for i in range(len(data['medians'])):
         limits.append(np.mean(data['medians'][i].get_xdata()))
-        bp = results[xLabels[i]] # bp: boxplot
+        bp = results[xLabels[i]]  # bp: boxplot
         bp['median'] = data['medians'][i].get_ydata()[0]
         bp['Q1'] = data['boxes'][i].get_ydata()[1]
         bp['Q3'] = data['boxes'][i].get_ydata()[2]
@@ -1472,7 +1477,6 @@ def melodicDensity(linesData,
         print('"' + filename + '" plotted and saved.')
 
     return results
-
 
 
 ###############################################################################
@@ -1505,10 +1509,10 @@ def checkInput(value, element):
     p" to quit the program: erhuang
     ['erhuang', 'xipi']
     '''
-    corrects = {'hd': ('hangdang', ['laosheng', 'dan']),
-                'sq': ('shengqiang', ['erhuang', 'xipi']),
+    corrects = {'hd': ('hangdang', ['laosheng', 'dan', 'laodan']),
+                'sq': ('shengqiang', ['erhuang', 'xipi', 'nanbangzi', 'sipingdiao']),
                 'bs': ('banshi', ['manban', 'sanyan', 'zhongsanyan',
-                                  'kuaisanyan', 'yuanban', 'erliu', 'liushui',
+                                  'kuaisanyan', 'yuanban', 'erliu', "kuai'erliu", 'liushui',
                                   'kuaiban']),
                 'ju': ('judou', ['s', 's1', 's2', 'x'])}
 
@@ -1522,7 +1526,7 @@ def checkInput(value, element):
         inputs = inputs[:-2] + ' and ' + correct[-1]
         while value[i] not in correct:
             error = True
-            message = '\nACTION REQUIRED: "' + value[i] + '" is not a valid '+\
+            message = '\nACTION REQUIRED: "' + value[i] + '" is not a valid ' +\
                       corrects[element][0] + '. Valid inputs are ' + inputs +\
                       '. Please enter a new input, "skip" to ignore '\
                       'this input, or "stop" to quit the program: '
@@ -1546,7 +1550,6 @@ def checkInput(value, element):
             value.pop(k)
 
     return value
-
 
 
 def checkInput_cn(hangdang, shengqiang, banshi):
@@ -1573,7 +1576,7 @@ def checkInput_cn(hangdang, shengqiang, banshi):
     '''
 
     # Check that the inputted parameters are correct
-    ## Check hangdang is only one
+    # Check hangdang is only one
     if len(hangdang) > 1:
         n = str(len(hangdang))
         message = '\nWARNING: you inputted ' + n + ' hangdang. This function '\
@@ -1590,7 +1593,7 @@ def checkInput_cn(hangdang, shengqiang, banshi):
         else:
             hangdang = checkInput([ans], 'hd')
 
-    ## Check shengqiang is correct
+    # Check shengqiang is correct
 
     while shengqiang not in [['xipi'], ['erhuang']]:
         message = '\nERROR: Invalid shengqiang. This function only takes '\
@@ -1606,7 +1609,6 @@ def checkInput_cn(hangdang, shengqiang, banshi):
     banshi = checkInput(banshi, 'bs')
 
     return hangdang, shengqiang, banshi
-
 
 
 def findVoiceParts(score):
@@ -1629,18 +1631,18 @@ def findVoiceParts(score):
     voiceParts = []
 
     for p in score.parts:
-        if len(p.flat.notes) == 0: continue
+        if len(p.flat.notes) == 0:
+            continue
         i = 0
         n = p.flat.notes[i]
         while n.quarterLength == 0:
             i += 1
             n = p.flat.notes.stream()[i]
         if n.hasLyrics():
-                if p.hasElementOfClass('Instrument'):
-                    p.remove(p.getInstrument())
-                voiceParts.append(p)
+            if p.hasElementOfClass('Instrument'):
+                p.remove(p.getInstrument())
+            voiceParts.append(p)
     return voiceParts
-
 
 
 def floatOrFraction(strValue):
@@ -1672,7 +1674,6 @@ def floatOrFraction(strValue):
         value = float(strValue)
 
     return value
-
 
 
 def plottingParameters(material, count, yValues):
@@ -1744,9 +1745,9 @@ def plottingParameters(material, count, yValues):
             sq = 'xp'
 
     # Color, hatch and limits codes
-    colors = {'ls':'#66CCFF', 'da':'#FF9966', 'sd':'#B2B2B2'}
-    hatches = {'eh':'/', 'xp':'\\', 'ex':'x'} # hatch for the bars
-    xLimits = {'ls':(54, 76), 'da':(59, 85), 'sd':(54,85)}
+    colors = {'ls': '#66CCFF', 'da': '#FF9966', 'sd': '#B2B2B2'}
+    hatches = {'eh': '/', 'xp': '\\', 'ex': 'x'}  # hatch for the bars
+    xLimits = {'ls': (54, 76), 'da': (59, 85), 'sd': (54, 85)}
 
     # Setting x limits
     limX = xLimits[hd]
@@ -1771,7 +1772,6 @@ def plottingParameters(material, count, yValues):
     h = hatches[sq]
 
     return yValues, limX, yLabel, col, h
-
 
 
 def plotting(filename, xPositions, xLabels, yValues, title=None, limX=None,
@@ -1810,14 +1810,14 @@ def plotting(filename, xPositions, xLabels, yValues, title=None, limX=None,
 
     plt.figure()
     plt.bar(xPositions, yValues, width, linewidth=0, zorder=1,
-            color = col,
-            hatch = h)
+            color=col,
+            hatch=h)
     if scaleGuides:
-        plt.axvline(x=64+width/2, color='red', zorder=0) # Tonic line
-        plt.axvline(x=76+width/2, color='red', ls='--', zorder=0) # 8ve tonic
-        plt.axvline(x=59+width/2, color='gray', ls=':', zorder=0) # Fifth
-        plt.axvline(x=71+width/2, color='gray', ls=':', zorder=0) # Fifth
-        plt.axvline(x=83+width/2, color='gray', ls=':', zorder=0) # Fifth
+        plt.axvline(x=64+width/2, color='red', zorder=0)  # Tonic line
+        plt.axvline(x=76+width/2, color='red', ls='--', zorder=0)  # 8ve tonic
+        plt.axvline(x=59+width/2, color='gray', ls=':', zorder=0)  # Fifth
+        plt.axvline(x=71+width/2, color='gray', ls=':', zorder=0)  # Fifth
+        plt.axvline(x=83+width/2, color='gray', ls=':', zorder=0)  # Fifth
     for yValue in yValues:
         plt.axhline(y=yValue, color='gray', ls=':', zorder=0)
     plt.xticks(xPositions + width/2, xLabels, rotation=90,
@@ -1839,7 +1839,6 @@ def plotting(filename, xPositions, xLabels, yValues, title=None, limX=None,
     plt.savefig(filename)
 
     print('"' + filename + '" plotted and saved.')
-
 
 
 def printingFound(rubric, hd, sq, bs, ju, found_lines):
@@ -1894,7 +1893,6 @@ def printingFound(rubric, hd, sq, bs, ju, found_lines):
 
     if len(not_found) > 30:
         print(not_found)
-
 
 
 def findCadentialNotes(linesData, hd, sq, bs, ju, includeGraceNotes=True):
@@ -1955,14 +1953,16 @@ def findCadentialNotes(linesData, hd, sq, bs, ju, includeGraceNotes=True):
         parts = findVoiceParts(loadedScore)
         # Work with each part
         for partIndex in range(1, len(score)):
-            if len(score[partIndex]) == 0: continue # Skip part if it's empty
+            if len(score[partIndex]) == 0:
+                continue  # Skip part if it's empty
             # Get the notes from the current part
             part = parts[partIndex-1]
             notes = part.flat.notesAndRests.stream()
             # Find segments to analyze in the current part
             for line in score[partIndex]:
                 for judou in range(len(line)):
-                    if len(line[judou]) == 0: continue
+                    if len(line[judou]) == 0:
+                        continue
                     start = line[judou][0]
                     end = line[judou][1]
                     segment = notes.getElementsByOffset(start, end)
@@ -1975,7 +1975,7 @@ def findCadentialNotes(linesData, hd, sq, bs, ju, includeGraceNotes=True):
                         cadenceNote = lastNote.nameWithOctave
                     else:
                         while lastNote.quarterLength == 0:
-                            print('\t(Grace note omitted in ' + scoreName +\
+                            print('\t(Grace note omitted in ' + scoreName +
                                   ', ' + str(partIndex) + ')')
                             i += -1
                             lastNote = segment[i]
@@ -2006,7 +2006,6 @@ def findCadentialNotes(linesData, hd, sq, bs, ju, includeGraceNotes=True):
         sortedValues.append(np.array(row))
 
     return sortedNoteNames, sortedValues
-
 
 
 def getAmbitus(material):
@@ -2046,7 +2045,8 @@ def getAmbitus(material):
         parts = findVoiceParts(loadedScore)
         # Work with each part
         for partIndex in range(1, len(score)):
-            if len(score[partIndex]) == 0: continue # Skip part if it's empty
+            if len(score[partIndex]) == 0:
+                continue  # Skip part if it's empty
             # Get the notes from the current part
             part = parts[partIndex-1]
             notes = part.flat.notes.stream()
@@ -2056,7 +2056,7 @@ def getAmbitus(material):
                 end = startEnd[1]
                 segment = notes.getElementsByOffset(start, end)
                 segmentAmbitus = segment.analyze('ambitus')
-                if ambitusStart==None and ambitusEnd==None:
+                if ambitusStart == None and ambitusEnd == None:
                     ambitusStart = segmentAmbitus.noteStart
                     ambitusEnd = segmentAmbitus.noteEnd
                 else:
@@ -2071,7 +2071,6 @@ def getAmbitus(material):
           ambitusStart.nameWithOctave, 'to', ambitusEnd.nameWithOctave)
 
     return ambitusInterval
-
 
 
 def findScoreByPitchThreshold(material, thresholdPitch, lowHigh):
@@ -2120,7 +2119,8 @@ def findScoreByPitchThreshold(material, thresholdPitch, lowHigh):
         parts = findVoiceParts(loadedScore)
         # Work with each part
         for partIndex in range(1, len(score)):
-            if len(score[partIndex]) == 0: continue # Skip part if it's empty
+            if len(score[partIndex]) == 0:
+                continue  # Skip part if it's empty
             # Get the notes from the current part
             part = parts[partIndex-1]
             notes = part.flat.notes.stream()
@@ -2144,7 +2144,6 @@ def findScoreByPitchThreshold(material, thresholdPitch, lowHigh):
     print('Done!')
 
     return scores
-
 
 
 def findScoreByPitch(material, pitchList):
@@ -2199,7 +2198,8 @@ def findScoreByPitch(material, pitchList):
         parts = findVoiceParts(loadedScore)
         # Work with each part
         for partIndex in range(1, len(score)):
-            if len(score[partIndex]) == 0: continue # Skip part if it's empty
+            if len(score[partIndex]) == 0:
+                continue  # Skip part if it's empty
             # Get the notes from the current part
             part = parts[partIndex-1]
             notes = part.flat.notes.stream()
@@ -2212,23 +2212,23 @@ def findScoreByPitch(material, pitchList):
                     noteName = n.nameWithOctave
                     if noteName in pitchList:
                         n.color = 'red'
-                        pitchesFound[noteName] = pitchesFound.get(noteName,0)+1
+                        pitchesFound[noteName] = pitchesFound.get(
+                            noteName, 0)+1
                         showScore = True
                         if scorePath not in scores:
                             scores.append(scorePath)
         if showScore:
             for p in pitchesFound:
                 print('\t' + str(pitchesFound[p]), 'samples of', p,
-                  'found in this score')
+                      'found in this score')
             print('\tShowing', scoreName)
             loadedScore.show()
 
     return scores
 
 
-
 def findScoreByInterval(material, intvlList, directedInterval=False,
-                 silence2ignore=0.25, ignoreGraceNotes=False):
+                        silence2ignore=0.25, ignoreGraceNotes=False):
     '''
     Given the list returned by the collectLineMaterial function and a list of
     intervals, it searches for the scores in which lines retrieved by the
@@ -2286,7 +2286,8 @@ def findScoreByInterval(material, intvlList, directedInterval=False,
         parts = findVoiceParts(loadedScore)
         # Work with each part
         for partIndex in range(1, len(score)):
-            if len(score[partIndex]) == 0: continue # Skip part if it's empty
+            if len(score[partIndex]) == 0:
+                continue  # Skip part if it's empty
             # Get the notes from the current part
             part = parts[partIndex-1]
             notes = part.flat.notesAndRests.stream()
@@ -2305,9 +2306,11 @@ def findScoreByInterval(material, intvlList, directedInterval=False,
 
                 for j in range(len(segment)-i):
                     n1 = segment[j]
-                    if n1.isRest: continue
+                    if n1.isRest:
+                        continue
                     if ignoreGraceNotes:
-                        if n1.quarterLength == 0: continue
+                        if n1.quarterLength == 0:
+                            continue
                     k = 1
                     while True:
                         n2 = segment[j+k]
@@ -2317,11 +2320,12 @@ def findScoreByInterval(material, intvlList, directedInterval=False,
                             else:
                                 n2 = None
                                 break
-                        elif (n2.quarterLength==0)and(ignoreGraceNotes==True):
+                        elif (n2.quarterLength == 0) and (ignoreGraceNotes == True):
                             j += 1
                         else:
                             break
-                    if n2==None: continue
+                    if n2 == None:
+                        continue
                     currentIntvl = interval.Interval(n1, n2)
                     if directedInterval:
                         intvlName = currentIntvl.directedName
@@ -2330,14 +2334,15 @@ def findScoreByInterval(material, intvlList, directedInterval=False,
                     if intvlName in intvlList:
                         n1.color = 'red'
                         n2.color = 'red'
-                        intvlsFound[intvlName] = intvlsFound.get(intvlName,0)+1
+                        intvlsFound[intvlName] = intvlsFound.get(
+                            intvlName, 0)+1
                         showScore = True
                         if scorePath not in scores:
                             scores.append(scorePath)
         if showScore:
             for k in intvlsFound:
                 print('\t' + str(intvlsFound[k]), 'samples of', k,
-                  'found in this score')
+                      'found in this score')
             print('\tShowing', scoreName)
             loadedScore.show()
 

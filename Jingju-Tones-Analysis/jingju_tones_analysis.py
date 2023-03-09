@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 
-
 # Jingju Tones Analysis is a collection of tools for the statistical analysis
 # of the relationship between tones and melody in the Jingju Music Scores
 # Collection (http://doi.org/10.5281/zenodo.1464653).
@@ -22,10 +21,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 from music21 import *
 import fractions
-
 
 
 ###############################################################################
@@ -33,10 +30,9 @@ import fractions
 ###############################################################################
 
 def toneMaterialPerLine(linesData, hd=['laosheng', 'dan'], sq=['erhuang',
-                         'xipi'], bs = ['manban', 'sanyan', 'zhongsanyan',
-                         'kuaisanyan', 'yuanban', 'erliu', 'liushui',
-                         'kuaiban'], ju = ['s', 's1', 's2', 'x']):
-
+                                                               'xipi'], bs=['manban', 'sanyan', 'zhongsanyan',
+                                                                            'kuaisanyan', 'yuanban', 'erliu', 'liushui',
+                                                                            'kuaiban'], ju=['s', 's1', 's2', 'x']):
     '''str, [str], [str], [str], [str] --> [{str:list}, [str[[str, float,
                                             float, str, str, str, str]]]
 
@@ -73,7 +69,7 @@ def toneMaterialPerLine(linesData, hd=['laosheng', 'dan'], sq=['erhuang',
     material = []
 
     # Search information
-    searchInfo = {'hd':[], 'sq':[], 'bs':[], 'ju':[]}
+    searchInfo = {'hd': [], 'sq': [], 'bs': [], 'ju': []}
     material.append(searchInfo)
 
     # Segments collection
@@ -81,8 +77,9 @@ def toneMaterialPerLine(linesData, hd=['laosheng', 'dan'], sq=['erhuang',
         strInfo = row.strip().split(',')
         score = strInfo[0]
         if score != '':
-            material.append([path+score,[]])
-            if 'Part 1' in row: continue
+            material.append([path+score, []])
+            if 'Part 1' in row:
+                continue
 
         if (score == '') and ('Part' in row):
             material[-1].append([])
@@ -129,12 +126,10 @@ def toneMaterialPerLine(linesData, hd=['laosheng', 'dan'], sq=['erhuang',
     return material
 
 
-
 def toneMaterialPerJudou(linesData, hd=['laosheng', 'dan'], sq=['erhuang',
-                         'xipi'], bs = ['manban', 'sanyan', 'zhongsanyan',
+                         'xipi'], bs=['manban', 'sanyan', 'zhongsanyan',
                          'kuaisanyan', 'yuanban', 'erliu', 'liushui',
-                         'kuaiban'], ju = ['s', 's1', 's2', 'x']):
-
+                                       'kuaiban'], ju=['s', 's1', 's2', 'x']):
     '''str, [str], [str], [str], [str] --> [{str:list}, [str[[str, float,
                                             float, str]]]
 
@@ -168,7 +163,7 @@ def toneMaterialPerJudou(linesData, hd=['laosheng', 'dan'], sq=['erhuang',
     material = []
 
     # Search information
-    searchInfo = {'hd':[], 'sq':[], 'bs':[], 'ju':[]}
+    searchInfo = {'hd': [], 'sq': [], 'bs': [], 'ju': []}
     material.append(searchInfo)
 
     # Segments collection
@@ -176,8 +171,9 @@ def toneMaterialPerJudou(linesData, hd=['laosheng', 'dan'], sq=['erhuang',
         strInfo = row.strip().split(',')
         score = strInfo[0]
         if score != '':
-            material.append([path+score,[]])
-            if 'Part 1' in row: continue
+            material.append([path+score, []])
+            if 'Part 1' in row:
+                continue
 
         if (score == '') and ('Part' in row):
             material[-1].append([])
@@ -239,7 +235,6 @@ def toneMaterialPerJudou(linesData, hd=['laosheng', 'dan'], sq=['erhuang',
     return material
 
 
-
 ###############################################################################
 ## MAIN FUNCTIONS                                                            ##
 ###############################################################################
@@ -266,21 +261,26 @@ def syllabicContour(material, filename=None, query=[]):
       contour as value.
     '''
 
-    contours = {'1':{}, '2':{}, '3':{}, '4':{}}
+    contours = {'1': {}, '2': {}, '3': {}, '4': {}}
     syllables = []
     tone5 = 0
 
     for score in material[1:]:
         # Loading the score to get the parts list
         syllables.append([])
-        scorePath = score[0]
-        scoreName = scorePath.split('/')[-1]
+        scorePath = score[0].split('/')
+        scoreName = scorePath[-1]
+        scorePath = os.path.join(*(scorePath[:-1]), 'MusicXML', scoreName)
+        if not os.path.exists(scorePath):
+            pre, ext = os.path.splitext(scorePath)
+            scorePath = pre + '.musicxml'
         loadedScore = converter.parse(scorePath)
         print(scoreName, 'parsed')
         parts = findVoiceParts(loadedScore)
         # Work with each part
         for partIndex in range(1, len(score)):
-            if len(score[partIndex]) == 0: continue # Skip part if it's empty
+            if len(score[partIndex]) == 0:
+                continue  # Skip part if it's empty
             # Get the notes from the current part
             part = parts[partIndex-1]
             notes = part.flat.notesAndRests.stream()
@@ -347,13 +347,13 @@ def syllabicContour(material, filename=None, query=[]):
                 syl = []
                 sylLength = 0
                 tuoqiang = False
-                graceNotes = [] # Store grace notes to be added to a note with
-                                # lyrics
-                inBrackets = False # Flag to check if the lyrics syllabe is
-                                   # within a bracket
-                toRed = [] # Stores indexes of the notes to show in red
-                showSegment = False # True if a search has been found in this
-                                    # segment
+                graceNotes = []  # Store grace notes to be added to a note with
+                # lyrics
+                inBrackets = False  # Flag to check if the lyrics syllabe is
+                # within a bracket
+                toRed = []  # Stores indexes of the notes to show in red
+                showSegment = False  # True if a search has been found in this
+                # segment
 
                 segment = notes.getElementsByOffset(start, end)
 
@@ -378,7 +378,8 @@ def syllabicContour(material, filename=None, query=[]):
                             else:
                                 tuoqiang = True
                             toneJump += len(char)
-                            if len(toRed)>0: toRed.append(i)
+                            if len(toRed) > 0:
+                                toRed.append(i)
                         elif inBrackets == True:
                             if sylLength <= threshold:
                                 syl.append(n.pitch.midi)
@@ -386,7 +387,8 @@ def syllabicContour(material, filename=None, query=[]):
                             else:
                                 tuoqiang = True
                             toneJump += len(char)
-                            if len(toRed)>0: toRed.append(i)
+                            if len(toRed) > 0:
+                                toRed.append(i)
                         elif '）' in char:
                             inBrackets = False
                             if sylLength <= threshold:
@@ -395,7 +397,8 @@ def syllabicContour(material, filename=None, query=[]):
                             else:
                                 tuoqiang = True
                             toneJump += len(char)
-                            if len(toRed)>0: toRed.append(i)
+                            if len(toRed) > 0:
+                                toRed.append(i)
                         else:
                             # First, solve the accumulated pitches in syl from
                             # the previous syllable
@@ -404,74 +407,80 @@ def syllabicContour(material, filename=None, query=[]):
                                     contour = defineContour(syl[:3])
                                 else:
                                     contour = defineContour(syl)
-                                if (len(query)>0 and contour==query[1]
-                                    and len(toRed)>0):
+                                if (len(query) > 0 and contour == query[1]
+                                        and len(toRed) > 0):
                                     for n2r in toRed:
                                         segment[n2r].color = 'red'
                                     showSegment = True
                                 syllables[-1][-1][-1].append(contour)
                                 syllables[-1][-1][-1].append(syl)
-                                if currentTone == '5': tone5 += 1
+                                if currentTone == '5':
+                                    tone5 += 1
                                 else:
                                     c = contours[currentTone]
                                     c[contour] = c.get(contour, 0) + 1
                             currentTone = tones[lyrIndex-toneJump]
-                            toRed=[]
-                            if len(query)>0 and currentTone == query[0]:
+                            toRed = []
+                            if len(query) > 0 and currentTone == query[0]:
                                 toRed.append(i)
                                 preGrace = 1
                                 while (i-preGrace >= 0 and
-                                       segment[i-preGrace].quarterLength==0):
+                                       segment[i-preGrace].quarterLength == 0):
                                     toRed.append(i-preGrace)
                                     preGrace += 1
-                            syllables[-1][-1].append([char,currentChar,
+                            syllables[-1][-1].append([char, currentChar,
                                                       currentTone])
                             toneJump += len(char) - 1
-                            syl = graceNotes + [n.pitch.midi] # Add preceding
-                                                              # grace notes
-                            graceNotes = [] # Grace notes buffer empty
+                            syl = graceNotes + [n.pitch.midi]  # Add preceding
+                            # grace notes
+                            graceNotes = []  # Grace notes buffer empty
                             sylLength = 0
                             tuoqiang = False
                         lyrIndex += len(char)
 
-                    elif n.quarterLength == 0: continue # Omit grace notes
+                    elif n.quarterLength == 0:
+                        continue  # Omit grace notes
 
-                    else: # A note without lyrics
+                    else:  # A note without lyrics
                         # Check if it could be a mordent
                         # So, check if it's not the last and has a shorter
                         # duration than a quaver
 
                         mid = n.pitch.midi
 
-                        if (i<len(segment)-1 and n.quarterLength<0.5
-                            and not segment[i-1].isRest):
+                        if (i < len(segment)-1 and n.quarterLength < 0.5
+                                and not segment[i-1].isRest):
                             premid = segment[i-1].pitch.midi
                             if (not segment[i+1].hasLyrics()
-                                and not segment[i+1].isRest):
+                                    and not segment[i+1].isRest):
                                 postmid = segment[i+1].pitch.midi
                                 if mid != premid and premid == postmid:
-                                    if len(toRed)>0: toRed.append(i)
+                                    if len(toRed) > 0:
+                                        toRed.append(i)
                                 else:
                                     if sylLength <= threshold:
                                         syl.append(mid)
                                         sylLength += n.quarterLength
                                     else:
                                         tuoqiang = True
-                                    if len(toRed)>0: toRed.append(i)
+                                    if len(toRed) > 0:
+                                        toRed.append(i)
                             else:
                                 if sylLength <= threshold:
                                     syl.append(mid)
                                     sylLength += n.quarterLength
                                 else:
                                     tuoqiang = True
-                                if len(toRed)>0: toRed.append(i)
+                                if len(toRed) > 0:
+                                    toRed.append(i)
                         else:
                             if sylLength <= threshold:
                                 syl.append(mid)
                                 sylLength += n.quarterLength
                             else:
                                 tuoqiang = True
-                            if len(toRed)>0: toRed.append(i)
+                            if len(toRed) > 0:
+                                toRed.append(i)
 
                 if tuoqiang:
                     syllables[-1][-1][-1].append(defineContour(syl[:3]))
@@ -479,7 +488,8 @@ def syllabicContour(material, filename=None, query=[]):
                     syllables[-1][-1][-1].append(defineContour(syl))
                 syllables[-1][-1][-1].append(syl)
 
-                if showSegment: segment.show()
+                if showSegment:
+                    segment.show()
 
     txt2print = '\tdL\tL\tA\tD\tAD\tDA'
     rels = ['L', 'A', 'D', 'AD', 'DA']
@@ -516,7 +526,6 @@ def syllabicContour(material, filename=None, query=[]):
     return syllables, contours
 
 
-
 def pairwiseRelationship(material, relationship=[1, 0], filename=None,
                          query=[]):
     '''list --> list, dict
@@ -549,18 +558,22 @@ def pairwiseRelationship(material, relationship=[1, 0], filename=None,
     and a direction (str); for example: ['1-2', 'A'].
     '''
 
-    pairs = {'1-1':{}, '1-2':{}, '1-3':{}, '1-4':{}, '1-5':{},
-             '2-1':{}, '2-2':{}, '2-3':{}, '2-4':{}, '2-5':{},
-             '3-1':{}, '3-2':{}, '3-3':{}, '3-4':{}, '3-5':{},
-             '4-1':{}, '4-2':{}, '4-3':{}, '4-4':{}, '4-5':{},
-             '5-1':{}, '5-2':{}, '5-3':{}, '5-4':{}}
+    pairs = {'1-1': {}, '1-2': {}, '1-3': {}, '1-4': {}, '1-5': {},
+             '2-1': {}, '2-2': {}, '2-3': {}, '2-4': {}, '2-5': {},
+             '3-1': {}, '3-2': {}, '3-3': {}, '3-4': {}, '3-5': {},
+             '4-1': {}, '4-2': {}, '4-3': {}, '4-4': {}, '4-5': {},
+             '5-1': {}, '5-2': {}, '5-3': {}, '5-4': {}}
     dous = []
 
     for score in material[1:]:
         s = []
         # Loading the score to get the parts list
-        scorePath = score[0]
-        scoreName = scorePath.split('/')[-1]
+        scorePath = score[0].split('/')
+        scoreName = scorePath[-1]
+        scorePath = os.path.join(*(scorePath[:-1]), 'MusicXML', scoreName)
+        if not os.path.exists(scorePath):
+            pre, ext = os.path.splitext(scorePath)
+            scorePath = pre + '.musicxml'
         loadedScore = converter.parse(scorePath)
         print(scoreName, 'parsed')
         parts = findVoiceParts(loadedScore)
@@ -583,14 +596,15 @@ def pairwiseRelationship(material, relationship=[1, 0], filename=None,
 
                     dou = []
 
-                    inBrackets = False # Flag to check if the lyrics syllabe is
-                                       # within a bracket
+                    inBrackets = False  # Flag to check if the lyrics syllabe is
+                    # within a bracket
 
                     segment = notes.getElementsByOffset(start, end)
 
                     for i in range(len(segment)):
                         n = segment[i]
-                        if n.quarterLength == 0: continue
+                        if n.quarterLength == 0:
+                            continue
                         elif n.hasLyrics():
                             char = n.lyric
                             currentChar = lyrics[lyrIndex:lyrIndex+len(char)]
@@ -618,7 +632,7 @@ def pairwiseRelationship(material, relationship=[1, 0], filename=None,
                                     dou[-1].append(last)
                                 first = n.pitch.midi
                                 dou.append([currentChar, currentTone,
-                                                   first])
+                                            first])
                                 toneJump += len(char) - 1
                             lyrIndex += len(char)
                     jump = 0
@@ -669,7 +683,6 @@ def pairwiseRelationship(material, relationship=[1, 0], filename=None,
                             segment = notes.getElementsByOffset(start, end)
                             segment.show()
 
-
     txt2print = '\tA\tL\tD'
 
     # Compute percentages
@@ -708,7 +721,6 @@ def pairwiseRelationship(material, relationship=[1, 0], filename=None,
     return dous, pairs
 
 
-
 ###############################################################################
 ## AUXILIARY FUNCTIONS                                                       ##
 ###############################################################################
@@ -733,18 +745,18 @@ def findVoiceParts(score):
     voiceParts = []
 
     for p in score.parts:
-        if len(p.flat.notes) == 0: continue
+        if len(p.flat.notes) == 0:
+            continue
         i = 0
         n = p.flat.notes[i]
         while n.quarterLength == 0:
             i += 1
             n = p.flat.notes.stream()[i]
         if n.hasLyrics():
-                if p.hasElementOfClass('Instrument'):
-                    p.remove(p.getInstrument())
-                voiceParts.append(p)
+            if p.hasElementOfClass('Instrument'):
+                p.remove(p.getInstrument())
+            voiceParts.append(p)
     return voiceParts
-
 
 
 def floatOrFraction(strValue):
@@ -776,7 +788,6 @@ def floatOrFraction(strValue):
         value = float(strValue)
 
     return value
-
 
 
 def defineContour(pitches):
@@ -811,8 +822,8 @@ def defineContour(pitches):
         elif first < last:
             contour = 'A'
         midPitches = pitches[1:-1]
-        h = max(midPitches) # Highest pitch
-        l = min(midPitches) # Lowest pitch
+        h = max(midPitches)  # Highest pitch
+        l = min(midPitches)  # Lowest pitch
         if contour == 'D':
             if (first >= h >= last) and (first >= l >= last):
                 contour = 'D'
@@ -855,9 +866,7 @@ def defineContour(pitches):
     return contour
 
 
-
 diacritics = ['，', '。', '？', '！', '；', '：', '、']
-
 
 
 def countCharacters(str):
@@ -871,23 +880,24 @@ def countCharacters(str):
     inBrackets = False
 
     for c in str:
-        if c in diacritics: continue
+        if c in diacritics:
+            continue
         elif c == '（':
             inBrackets = True
         elif c == '）':
             inBrackets = False
         else:
-            if inBrackets: continue
+            if inBrackets:
+                continue
             length += 1
 
     return length
 
 
-
 def countLineType(linesData, hd=['laosheng', 'dan'], sq=['erhuang',
-                        'xipi'], bs = ['manban', 'sanyan', 'zhongsanyan',
-                        'kuaisanyan', 'yuanban', 'erliu', 'liushui',
-                        'kuaiban'], ju = ['s', 's1', 's2', 'x']):
+                                                         'xipi'], bs=['manban', 'sanyan', 'zhongsanyan',
+                                                                      'kuaisanyan', 'yuanban', 'erliu', 'liushui',
+                                                                      'kuaiban'], ju=['s', 's1', 's2', 'x']):
     '''str, [str], [str], [str], [str] --> [{str:list}, [str,[[{str:str},str]]]
 
     Given the path to the lines_data.csv file, that should be stored in the
@@ -933,7 +943,7 @@ def countLineType(linesData, hd=['laosheng', 'dan'], sq=['erhuang',
     material = []
 
     # Search information
-    searchInfo = {'hd':[], 'sq':[], 'bs':[], 'ju':[]}
+    searchInfo = {'hd': [], 'sq': [], 'bs': [], 'ju': []}
     material.append(searchInfo)
 
     # Count line structure types
@@ -944,8 +954,9 @@ def countLineType(linesData, hd=['laosheng', 'dan'], sq=['erhuang',
         strInfo = row.strip().split(',')
         score = strInfo[0]
         if score != '':
-            material.append([path+score,[]])
-            if 'Part 1' in row: continue
+            material.append([path+score, []])
+            if 'Part 1' in row:
+                continue
 
         if (score == '') and ('Part' in row):
             material[-1].append([])
@@ -977,8 +988,8 @@ def countLineType(linesData, hd=['laosheng', 'dan'], sq=['erhuang',
         # Check if the search criteria are met
         if (hd0 in hd) and (sq0 in sq) and (bs0 in bs) and (ju0 in ju):
 
-            material[-1][-1].append([{'line':line, 'jd1':jd1, 'jd2':jd2,
-                                     'jd3':jd3}, line_structure])
+            material[-1][-1].append([{'line': line, 'jd1': jd1, 'jd2': jd2,
+                                     'jd3': jd3}, line_structure])
 
             if hd0 not in material[0]['hd']:
                 material[0]['hd'].append(hd0)
@@ -1005,7 +1016,7 @@ def countLineType(linesData, hd=['laosheng', 'dan'], sq=['erhuang',
         for l in score2remove:
             material.pop(l)
 
-    sort_count = sorted(str_types.items(),key=lambda x: x[1],reverse=True)
+    sort_count = sorted(str_types.items(), key=lambda x: x[1], reverse=True)
 
     total = 0
     for i in sort_count:
@@ -1023,11 +1034,10 @@ def countLineType(linesData, hd=['laosheng', 'dan'], sq=['erhuang',
     return material
 
 
-
 def getTones(linesData, hd=['laosheng', 'dan'], sq=['erhuang', 'xipi'],
-                    bs = ['manban', 'sanyan', 'zhongsanyan', 'kuaisanyan',
-                    'yuanban', 'erliu', 'liushui', 'kuaiban'], ju = ['s', 's1',
-                    's2', 'x']):
+             bs=['manban', 'sanyan', 'zhongsanyan', 'kuaisanyan',
+                 'yuanban', 'erliu', 'liushui', 'kuaiban'], ju=['s', 's1',
+                                                                's2', 'x']):
     '''str, [str], [str], [str], [str] --> str
     Given the path to the lines_data.csv file, that should be stored in the
     same folder as the MusicXML scores of the Jingju Music Scores Collection,
@@ -1050,7 +1060,8 @@ def getTones(linesData, hd=['laosheng', 'dan'], sq=['erhuang', 'xipi'],
             scoreName = score
             scoreInTones = False
 
-        if 'Part' in line: continue
+        if 'Part' in line:
+            continue
 
         hd0 = strInfo[1]
         sq0 = strInfo[2]

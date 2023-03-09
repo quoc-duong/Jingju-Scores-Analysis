@@ -124,7 +124,7 @@ def collectLineMaterial(linesData,
     material.append(searchInfo)
 
     # Segments collection
-    for line in data:
+    for line_number, line in enumerate(data):
         strInfo = line.strip().split(',')
         score = strInfo[0]
         if score != '':
@@ -146,7 +146,7 @@ def collectLineMaterial(linesData,
         end = floatOrFraction(strInfo[7])
 
         if (hd0 in hd) and (sq0 in sq) and (bs0 in bs) and (ju0 in ju):
-            material[-1][-1].append([start, end])
+            material[-1][-1].append([start, end, line_number])
             found_lines += 1
             if hd0 not in material[0]['hd']:
                 material[0]['hd'].append(hd0)
@@ -174,6 +174,7 @@ def collectLineMaterial(linesData,
         for l in score2remove:
             material.pop(l)
 
+    print(material[1])
     return material
 
 

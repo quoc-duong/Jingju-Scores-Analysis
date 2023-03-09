@@ -459,8 +459,8 @@ if __name__ == '__main__':
         to_plot = args.figures
 
     # Plot figures
-    # if 'ph' in to_plot:
-    #    plot_ph(args.linesData, root_folder)
+    if 'ph' in to_plot:
+        plot_ph(args.linesData, root_folder)
 
     if 'ihd' in to_plot:
         plot_ihd(args.linesData, root_folder)

@@ -26,11 +26,13 @@ import sys
 import matplotlib.pyplot as plt
 from music21 import *
 import fractions
-
+import os
+from tqdm import tqdm
 
 ###############################################################################
 ## FUNCTIONS FOR GATHERING MATERIAL                                          ##
 ###############################################################################
+
 
 def collectLineMaterial(linesData,
                         hangdang=['laosheng', 'dan'],
@@ -442,12 +444,16 @@ def pitchHistogram(linesData,
 
     pitchCount = {}
 
-    for score in material[1:]:
+    for score in tqdm(material[1:]):
         # Loading the score to get the parts list
-        scorePath = score[0]
-        scoreName = scorePath.split('/')[-1]
+        scorePath = score[0].split('/')
+        scoreName = scorePath[-1]
+        scorePath = os.path.join(*(scorePath[:-1]), 'MusicXML', scoreName)
+        if not os.path.exists(scorePath):
+            pre, ext = os.path.splitext(scorePath)
+            scorePath = pre + '.musicxml'
         loadedScore = converter.parse(scorePath)
-        print('\tParsing ' + scoreName)
+        #print('\tParsing ' + scoreName)
         parts = findVoiceParts(loadedScore)
         # Work with each part
         for partIndex in range(1, len(score)):
@@ -645,8 +651,12 @@ def pitchHistogramLineJudou(linesData,
 
     for score in material[1:]:
         # Loading the score to get the parts list
-        scorePath = score[0]
-        scoreName = scorePath.split('/')[-1]
+        scorePath = score[0].split('/')
+        scoreName = scorePath[-1]
+        scorePath = os.path.join(*(scorePath[:-1]), 'MusicXML', scoreName)
+        if not os.path.exists(scorePath):
+            pre, ext = os.path.splitext(scorePath)
+            scorePath = pre + '.musicxml'
         loadedScore = converter.parse(scorePath)
         print('\tParsing ' + scoreName)
         parts = findVoiceParts(loadedScore)
@@ -900,12 +910,20 @@ def intervalHistogram(linesData,
 
     intervalCount = {}
 
-    for score in material[1:]:
+    for score in tqdm(material[1:]):
         # Loading the score to get the parts list
-        scorePath = score[0]
-        scoreName = scorePath.split('/')[-1]
+        scorePath = score[0].split('/')
+        scoreName = scorePath[-1]
+        scorePath = os.path.join(*(scorePath[:-1]), 'MusicXML', scoreName)
+        if not os.path.exists(scorePath):
+            pre, ext = os.path.splitext(scorePath)
+            scorePath = pre + '.musicxml'
+
+        if scoreName == 'lsxp-WoZhuYe-ZhuiHanXin.xml' or scoreName == 'daeh-WeiKaiYan-DouEYuan.musicxml':
+            continue  # lol k
+
         loadedScore = converter.parse(scorePath)
-        print('\tParsing ' + scoreName)
+        #print('\tParsing ' + scoreName)
         parts = findVoiceParts(loadedScore)
         # Work with each part
         for partIndex in range(1, len(score)):
@@ -921,6 +939,7 @@ def intervalHistogram(linesData,
                 segment = notes.getElementsByOffset(start, end)
                 # Count intervals in the current segment
                 # Find the last note that is not a grace note
+
                 i = 1
                 lastn = segment[-i]
                 while lastn.quarterLength == 0:
@@ -1328,8 +1347,8 @@ def melodicDensity(linesData,
 
     while notesOrDuration not in ['notes', 'Notes', 'duration', 'Duration']:
         message = '\nERROR: The value given for the notesOrDuration parameter'\
-                  ' is invalid. Please enter either "notes" or "duration" (to'\
-                  ' quit the program, please type "stop"): '
+            ' is invalid. Please enter either "notes" or "duration" (to'\
+            ' quit the program, please type "stop"): '
         ans = input(message)
         if ans == 'stop':
             exit()
@@ -1344,13 +1363,17 @@ def melodicDensity(linesData,
 
     print('\nComputing melodic density...\nProcessing scores:')
 
-    for score in material[1:]:
+    for score in tqdm(material[1:]):
         # Loading the score to get the parts list
-        scorePath = score[0]
+        scorePath = score[0].split('/')
+        scoreName = scorePath[-1]
+        scorePath = os.path.join(*(scorePath[:-1]), 'MusicXML', scoreName)
+        if not os.path.exists(scorePath):
+            pre, ext = os.path.splitext(scorePath)
+            scorePath = pre + '.musicxml'
         scores.append(scorePath)
-        scoreName = scorePath.split('/')[-1]
         loadedScore = converter.parse(scorePath)
-        print('\tParsing ' + scoreName)
+        #print('\tParsing ' + scoreName)
         localCount = []
         parts = findVoiceParts(loadedScore)
         # Work with each part
@@ -1385,7 +1408,7 @@ def melodicDensity(linesData,
                         if i+j == len(segment):
                             continue
                         n2 = segment[i+j]
-                        if n2.hasLyrics():
+                        if len(n2.lyrics) > 0:
                             if (('（' in n2.lyric) or ('）' in n2.lyric) or
                                     openParenthesis):
                                 localCount[-1] += value
@@ -1403,7 +1426,7 @@ def melodicDensity(linesData,
                             localCount[-1] += value
                             accumulatedCount[-1] += value
                     else:
-                        if n.hasLyrics():
+                        if len(n.lyrics) > 0:
                             # Check if the lyric is a padding syllable
                             if ('（' in n.lyric) and ('）' in n.lyric):
                                 localCount[-1] += value
@@ -1527,9 +1550,9 @@ def checkInput(value, element):
         while value[i] not in correct:
             error = True
             message = '\nACTION REQUIRED: "' + value[i] + '" is not a valid ' +\
-                      corrects[element][0] + '. Valid inputs are ' + inputs +\
-                      '. Please enter a new input, "skip" to ignore '\
-                      'this input, or "stop" to quit the program: '
+                corrects[element][0] + '. Valid inputs are ' + inputs +\
+                '. Please enter a new input, "skip" to ignore '\
+                'this input, or "stop" to quit the program: '
             ans = input(message)
             if ans == 'stop' or ans == 'Stop':
                 exit()
@@ -1541,7 +1564,7 @@ def checkInput(value, element):
 
     if len(to_skip) == len(value):
         message = '\nERROR: after skipping incorrect values no input for ' +\
-                  corrects[element][0] + ' is left. The program will exit.'
+            corrects[element][0] + ' is left. The program will exit.'
         print(message)
         exit()
 
@@ -1580,8 +1603,8 @@ def checkInput_cn(hangdang, shengqiang, banshi):
     if len(hangdang) > 1:
         n = str(len(hangdang))
         message = '\nWARNING: you inputted ' + n + ' hangdang. This function '\
-                  'might return not musically meaningful results for more '\
-                  'than one hangdang. If you want to continue with ' + n +\
+            'might return not musically meaningful results for more '\
+            'than one hangdang. If you want to continue with ' + n +\
                   ' hangdang please type "continue". Otherwise, please type '\
                   'which hangdang you want to analyse. (To quit the program,'\
                   ' please type "stop"): '
@@ -1597,8 +1620,8 @@ def checkInput_cn(hangdang, shengqiang, banshi):
 
     while shengqiang not in [['xipi'], ['erhuang']]:
         message = '\nERROR: Invalid shengqiang. This function only takes '\
-                  'either "xipi" or "erhuang". Which shengqiang do you want '\
-                  'to analyse? (To quit the program, please type "stop"): '
+            'either "xipi" or "erhuang". Which shengqiang do you want '\
+            'to analyse? (To quit the program, please type "stop"): '
         ans = input(message)
         if ans == 'stop' or ans == 'Stop':
             exit()
@@ -1638,7 +1661,7 @@ def findVoiceParts(score):
         while n.quarterLength == 0:
             i += 1
             n = p.flat.notes.stream()[i]
-        if n.hasLyrics():
+        if len(n.lyrics) > 0:
             if p.hasElementOfClass('Instrument'):
                 p.remove(p.getInstrument())
             voiceParts.append(p)
@@ -1735,6 +1758,8 @@ def plottingParameters(material, count, yValues):
             hd = 'ls'
         elif hdInfo[0] == 'dan':
             hd = 'da'
+        elif hdInfo[0] == 'laodan':
+            hd = 'ld'
     # Shengqiang information
     if len(sqInfo) == 2:
         sq = 'ex'
@@ -1743,11 +1768,17 @@ def plottingParameters(material, count, yValues):
             sq = 'eh'
         elif sqInfo[0] == 'xipi':
             sq = 'xp'
+        elif sqInfo[0] == 'nanbangzi':
+            sq = 'nb'
+        elif sqInfo[0] == 'sipingdiao':
+            sq = 'sp'
 
     # Color, hatch and limits codes
-    colors = {'ls': '#66CCFF', 'da': '#FF9966', 'sd': '#B2B2B2'}
-    hatches = {'eh': '/', 'xp': '\\', 'ex': 'x'}  # hatch for the bars
-    xLimits = {'ls': (54, 76), 'da': (59, 85), 'sd': (54, 85)}
+    colors = {'ls': '#66CCFF', 'da': '#FF9966',
+              'sd': '#B2B2B2', 'ld': '#B2B2B2'}
+    hatches = {'eh': '/', 'xp': '\\', 'ex': 'x',
+               'nb': '\\', 'sp': '/'}  # hatch for the bars
+    xLimits = {'ls': (54, 76), 'da': (59, 85), 'sd': (54, 85), 'ld': None}
 
     # Setting x limits
     limX = xLimits[hd]
@@ -1826,7 +1857,8 @@ def plotting(filename, xPositions, xLabels, yValues, title=None, limX=None,
     if limX != None:
         plt.xlim(limX[0]-(1-width), limX[1]+1)
     else:
-        plt.xlim(xPositions[0]-(1-width), xPositions[-1]+1)
+        if len(xPositions) != 0:
+            plt.xlim(xPositions[0]-(1-width), xPositions[-1]+1)
     if limY != None:
         plt.ylim(limY[0], limY[1])
     if xLabel != None:
@@ -1864,7 +1896,7 @@ def printingFound(rubric, hd, sq, bs, ju, found_lines):
 
     if found_lines == 0:
         message = '\nALERT: no lines found for any combination of the '\
-                  'elements inputted. The program will exit.'
+            'elements inputted. The program will exit.'
         print(message)
         exit()
 
@@ -1882,10 +1914,10 @@ def printingFound(rubric, hd, sq, bs, ju, found_lines):
 
     if len(found) == 4:
         to_print = '\n' + str(found_lines) + ' lines were retrieved for the '\
-                   'combination of '
+            'combination of '
     else:
         to_print = '\n' + str(found_lines) + ' lines were retrieved for '\
-                   'combinations of '
+            'combinations of '
     for item in range(len(found)-1):
         to_print += found[item] + ', '
     to_print = to_print[:-2] + ' and ' + found[-1] + '.'
@@ -1946,9 +1978,13 @@ def findCadentialNotes(linesData, hd, sq, bs, ju, includeGraceNotes=True):
     print('\nProcessing scores:')
 
     for score in material[1:]:
-        scorePath = score[0]
+        scorePath = score[0].split('/')
+        scoreName = scorePath[-1]
+        scorePath = os.path.join(*(scorePath[:-1]), 'MusicXML', scoreName)
+        if not os.path.exists(scorePath):
+            pre, ext = os.path.splitext(scorePath)
+            scorePath = pre + '.musicxml'
         loadedScore = converter.parse(scorePath)
-        scoreName = scorePath.split('/')[-1]
         print('\tParsing ' + scoreName)
         parts = findVoiceParts(loadedScore)
         # Work with each part
@@ -2038,8 +2074,12 @@ def getAmbitus(material):
 
     for score in material[1:]:
         # Loading the score to get the parts list
-        scorePath = score[0]
-        scoreName = scorePath.split('/')[-1]
+        scorePath = score[0].split('/')
+        scoreName = scorePath[-1]
+        scorePath = os.path.join(*(scorePath[:-1]), 'MusicXML', scoreName)
+        if not os.path.exists(scorePath):
+            pre, ext = os.path.splitext(scorePath)
+            scorePath = pre + '.musicxml'
         loadedScore = converter.parse(scorePath)
         print(scoreName, 'parsed')
         parts = findVoiceParts(loadedScore)
@@ -2112,8 +2152,12 @@ def findScoreByPitchThreshold(material, thresholdPitch, lowHigh):
 
     for score in material[1:]:
         # Loading the score to get the parts list
-        scorePath = score[0]
-        scoreName = scorePath.split('/')[-1]
+        scorePath = score[0].split('/')
+        scoreName = scorePath[-1]
+        scorePath = os.path.join(*(scorePath[:-1]), 'MusicXML', scoreName)
+        if not os.path.exists(scorePath):
+            pre, ext = os.path.splitext(scorePath)
+            scorePath = pre + '.musicxml'
         loadedScore = converter.parse(scorePath)
         print(scoreName, 'parsed')
         parts = findVoiceParts(loadedScore)
@@ -2191,8 +2235,12 @@ def findScoreByPitch(material, pitchList):
         showScore = False
         pitchesFound = {}
         # Loading the score to get the parts list
-        scorePath = score[0]
-        scoreName = scorePath.split('/')[-1]
+        scorePath = score[0].split('/')
+        scoreName = scorePath[-1]
+        scorePath = os.path.join(*(scorePath[:-1]), 'MusicXML', scoreName)
+        if not os.path.exists(scorePath):
+            pre, ext = os.path.splitext(scorePath)
+            scorePath = pre + '.musicxml'
         loadedScore = converter.parse(scorePath)
         print(scoreName, 'parsed')
         parts = findVoiceParts(loadedScore)
@@ -2279,8 +2327,12 @@ def findScoreByInterval(material, intvlList, directedInterval=False,
         showScore = False
         intvlsFound = {}
         # Loading the score to get the parts list
-        scorePath = score[0]
-        scoreName = scorePath.split('/')[-1]
+        scorePath = score[0].split('/')
+        scoreName = scorePath[-1]
+        scorePath = os.path.join(*(scorePath[:-1]), 'MusicXML', scoreName)
+        if not os.path.exists(scorePath):
+            pre, ext = os.path.splitext(scorePath)
+            scorePath = pre + '.musicxml'
         loadedScore = converter.parse(scorePath)
         print(scoreName, 'parsed')
         parts = findVoiceParts(loadedScore)

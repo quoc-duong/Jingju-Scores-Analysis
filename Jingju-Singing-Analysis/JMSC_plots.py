@@ -51,27 +51,19 @@ ju = ['s', 's1', 's2', 'x']
 figs = ['ph', 'ihd', 'mdn', 'mdd']
 
 # Pitch histogram
-ph = [['ph-laosheng.png', [role_all[0]], shengqiang_all, bs, ju],
-      ['ph-dan.png', [role_all[1]], shengqiang_all, bs, ju],
-      ['ph-laodan.png', [role_all[2]], shengqiang_all, bs, ju]]
+ph = [['ph.png', role_all, shengqiang_all, bs, ju]]
 
 # Directed interval histogram
-ihd = [['ihd-laosheng.png', [role_all[0]], shengqiang_all, bs, ju],
-       ['ihd-dan.png', [role_all[1]], shengqiang_all, bs, ju],
-       ['ihd-laodan.png', [role_all[2]], shengqiang_all, bs, ju]]
+ihd = [['ihd.png', role_all, shengqiang_all, bs, ju]]
 
 # cn = [['cn-ls-eh.png', ls, eh, bs],
 #      ['cn-da-xp-kb.png', da, xp, kb]]
 
 # Melody density by notes
-mdn = [['mdn-laosheng.png', [role_all[0]], shengqiang_all, bs, ju],
-       ['mdn-dan.png', [role_all[1]], shengqiang_all, bs, ju],
-       ['mdn-laodan.png', [role_all[2]], shengqiang_all, bs, ju]]
+mdn = [['mdn.png', role_all, shengqiang_all, bs, ju]]
 
 # Melody density by duration
-mdd = [['mdd-laosheng.png', [role_all[0]], shengqiang_all, bs, ju],
-       ['mdd-dan.png', [role_all[1]], shengqiang_all, bs, ju],
-       ['mdd-laodan.png', [role_all[2]], shengqiang_all, bs, ju]]
+mdd = [['mdd', role_all, shengqiang_all, bs, ju]]
 
 # Define plotting functions
 
@@ -458,12 +450,12 @@ if __name__ == '__main__':
     else:
         to_plot = args.figures
 
-    # Plot figures
-    if 'ph' in to_plot:
-        plot_ph(args.linesData, root_folder)
-
-    if 'ihd' in to_plot:
-        plot_ihd(args.linesData, root_folder)
+#    # Plot figures
+#    if 'ph' in to_plot:
+#        plot_ph(args.linesData, root_folder)
+#
+#    if 'ihd' in to_plot:
+#        plot_ihd(args.linesData, root_folder)
 
 #    if 'cn' in to_plot:
 #        plot_cn(args.linesData, root_folder)

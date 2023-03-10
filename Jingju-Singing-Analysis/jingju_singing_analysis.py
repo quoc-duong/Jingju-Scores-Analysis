@@ -174,7 +174,6 @@ def collectLineMaterial(linesData,
         for l in score2remove:
             material.pop(l)
 
-    print(material[1])
     return material
 
 

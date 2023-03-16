@@ -189,7 +189,6 @@ def get_melodic_density(
 
     syllables = []
     totalCount = []
-    accumulatedCount = []
     scores = []
     results = {}
 
@@ -250,56 +249,40 @@ def get_melodic_density(
                             if (('（' in n2.lyric) or ('）' in n2.lyric) or
                                     openParenthesis):
                                 localCount[-1] += value
-                                accumulatedCount[-1] += value
                             else:
                                 if graceNote:
                                     localCount[-1] += value
-                                    accumulatedCount[-1] += value
                                 else:
                                     localCount.append(value)
-                                    accumulatedCount.append(value)
                                     syllables.append(n2.lyric)
                                     graceNote = True
                         else:
                             localCount[-1] += value
-                            accumulatedCount[-1] += value
                     else:
                         if len(n.lyrics) > 0:
                             # Check if the lyric is a padding syllable
                             if ('（' in n.lyric) and ('）' in n.lyric):
                                 localCount[-1] += value
-                                accumulatedCount[-1] += value
                             elif ('（' in n.lyric) and ('）' not in n.lyric):
                                 localCount[-1] += value
-                                accumulatedCount[-1] += value
                                 openParenthesis = True
                             elif ('（' not in n.lyric) and ('）' in n.lyric):
                                 localCount[-1] += value
-                                accumulatedCount[-1] += value
                                 openParenthesis = False
                             else:
                                 if openParenthesis:
                                     localCount[-1] += value
-                                    accumulatedCount[-1] += value
                                 elif graceNote:
                                     localCount[-1] += value
-                                    accumulatedCount[-1] += value
                                     graceNote = False
                                 else:
                                     localCount.append(value)
-                                    accumulatedCount.append(value)
                                     syllables.append(n.lyric)
                         else:
                             localCount[-1] += value
-                            accumulatedCount[-1] += value
         totalCount.append(localCount)
 
     print('Melodic density computed.')
-
-    totalCount.append(accumulatedCount)
-    scores.append('average')
-
-    xLabels.append('Avg')
 
     for i in range(len(xLabels)):
         results[xLabels[i]] = {}
@@ -321,7 +304,7 @@ def get_melodic_density(
         bp['outliers'] = data['fliers'][i].get_ydata().tolist()
 
     keys = ['median', 'Q1', 'Q3', 'lower fence', 'upper fence']
-    for i in range(1, len(results)):
+    for i in range(len(results)):
         line_number = xLabels[i]
         x = results[line_number]
         df.loc[line_number] = [0] * len(df.columns)
@@ -341,11 +324,8 @@ def get_melodic_density(
 if __name__ == "__main__":
     hd_all = ['laosheng', 'dan', 'laodan']
     linesData = '../../Jingju Scores Dataset/fixed.csv'
-    for hd in hd_all:
-        get_interval_hist_single(linesData, [hd])
 
     for hd in hd_all:
-        get_pitch_hist_single(linesData, [hd])
         get_melodic_density(linesData, [hd])  # Notes
         get_melodic_density(
             linesData, [hd], notesOrDuration='duration')  # Duration

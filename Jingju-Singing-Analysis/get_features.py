@@ -40,6 +40,9 @@ def get_interval_hist_single(
             pre, ext = os.path.splitext(scorePath)
             scorePath = pre + '.musicxml'
 
+        if scoreName == 'lsxp-WoZhuYe-ZhuiHanXin.xml' or scoreName == 'daeh-WeiKaiYan-DouEYuan.musicxml':
+            continue  # lol k
+
         loadedScore = converter.parse(scorePath)
         # print('\tParsing ' + scoreName)
         parts = jSA.findVoiceParts(loadedScore)
@@ -96,7 +99,7 @@ def get_interval_hist_single(
                         intvlName = intvl.name
                     df.at[line_number, intvlName] += 1
 
-    df.to_csv(f'ihd_{hd[0]}.csv')
+    df.to_csv(f'ihd_{sq[0]}.csv')
 
 
 def get_pitch_hist_single(
@@ -157,15 +160,15 @@ def get_pitch_hist_single(
                             continue
                     df.at[line_number, noteName] += noteDur
 
-    df.to_csv(f'pitch_{hd[0]}.csv')
+    df.to_csv(f'pitch_{sq[0]}.csv')
 
 
 def get_melodic_density(
     linesData,
-    hd=['laosheng', 'dan'],
-    sq=['erhuang', 'xipi'],
+    hd=['laosheng', 'dan', 'laodan'],
+    sq=['erhuang', 'xipi', 'nanbangzi', 'sipingdiao'],
     bs=['manban', 'sanyan', 'zhongsanyan', 'kuaisanyan',
-        'yuanban', 'erliu', 'liushui', 'kuaiban'],
+        'yuanban', 'erliu', "kuai'erliu", 'liushui', 'kuaiban'],
     ju=['s', 's1', 's2', 'x'],
     filename=None,
     includeGraceNotes=True,
@@ -314,17 +317,18 @@ def get_melodic_density(
         filename += 'duration_'
     elif notesOrDuration == 'notes':
         filename += 'notes_'
-    filename += hd[0] + '.csv'
+    filename += sq[0] + '.csv'
     df.to_csv(filename)
 
 
 if __name__ == "__main__":
     hd_all = ['laosheng', 'dan', 'laodan']
+    sq_all = ['erhuang', 'xipi', 'nanbangzi', 'sipingdiao']
     linesData = '../../Jingju Scores Dataset/fixed.csv'
 
-    for hd in hd_all:
-        get_pitch_hist_single(linesData, [hd])
-        get_interval_hist_single(linesData, [hd])
-        get_melodic_density(linesData, [hd])  # Notes
+    for sq in sq_all:
+        get_pitch_hist_single(linesData, sq=[sq])
+        get_interval_hist_single(linesData, sq=[sq])
+        get_melodic_density(linesData, sq=[sq])  # Notes
         get_melodic_density(
-            linesData, [hd], notesOrDuration='duration')  # Duration
+            linesData, sq=[sq], notesOrDuration='duration')  # Duration

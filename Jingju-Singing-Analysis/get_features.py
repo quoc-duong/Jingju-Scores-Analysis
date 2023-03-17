@@ -24,6 +24,9 @@ def get_interval_hist_single(
     material = jSA.collectLineMaterial(linesData, hangdang=hd, shengqiang=sq,
                                        banshi=bs, judou=ju)
 
+    if material == 42:
+        return
+
     print('\nComputing interval histogram...\nProcessing scores:')
 
     intervalCount = {}
@@ -99,7 +102,7 @@ def get_interval_hist_single(
                         intvlName = intvl.name
                     df.at[line_number, intvlName] += 1
 
-    df.to_csv(f'ihd_{sq[0]}.csv')
+    df.to_csv(f'ihd_{bs[0]}.csv')
 
 
 def get_pitch_hist_single(
@@ -114,6 +117,9 @@ def get_pitch_hist_single(
     # get all info from laosheng stuff with collectLineMaterial
     material = jSA.collectLineMaterial(linesData, hangdang=hd, shengqiang=sq,
                                        banshi=bs, judou=ju)
+
+    if material == 42:
+        return
 
     df = pd.DataFrame(columns=['F#3', 'G#3', 'A3', 'A#3', 'B3', 'C#4',
                       'C##4', 'D#4', 'E4', 'F#4', 'G#4', 'A4', 'A#4', 'B4', 'C#5', 'D#5', 'E5', 'F#5', 'G#5', 'A5', 'A#5', 'B5', 'C#6'])
@@ -160,7 +166,7 @@ def get_pitch_hist_single(
                             continue
                     df.at[line_number, noteName] += noteDur
 
-    df.to_csv(f'pitch_{sq[0]}.csv')
+    df.to_csv(f'pitch_{bs[0]}.csv')
 
 
 def get_melodic_density(
@@ -176,6 +182,9 @@ def get_melodic_density(
 ):
     material = jSA.collectLineMaterial(linesData, hangdang=hd, shengqiang=sq,
                                        banshi=bs, judou=ju)
+
+    if material == 42:
+        return
 
     while notesOrDuration not in ['notes', 'Notes', 'duration', 'Duration']:
         message = '\nERROR: The value given for the notesOrDuration parameter'\
@@ -317,18 +326,20 @@ def get_melodic_density(
         filename += 'duration_'
     elif notesOrDuration == 'notes':
         filename += 'notes_'
-    filename += sq[0] + '.csv'
+    filename += bs[0] + '.csv'
     df.to_csv(filename)
 
 
 if __name__ == "__main__":
     hd_all = ['laosheng', 'dan', 'laodan']
     sq_all = ['erhuang', 'xipi', 'nanbangzi', 'sipingdiao']
+    bs_all = ['manban', 'sanyan', 'zhongsanyan', 'kuaisanyan',
+              'yuanban', 'erliu', "kuai'erliu", 'liushui', 'kuaiban']
     linesData = '../../Jingju Scores Dataset/fixed.csv'
 
-    for sq in sq_all:
-        get_pitch_hist_single(linesData, sq=[sq])
-        get_interval_hist_single(linesData, sq=[sq])
-        get_melodic_density(linesData, sq=[sq])  # Notes
+    for bs in bs_all:
+        get_pitch_hist_single(linesData, bs=[bs])
+        get_interval_hist_single(linesData, bs=[bs])
+        get_melodic_density(linesData, bs=[bs])  # Notes
         get_melodic_density(
-            linesData, sq=[sq], notesOrDuration='duration')  # Duration
+            linesData, bs=[bs], notesOrDuration='duration')  # Duration

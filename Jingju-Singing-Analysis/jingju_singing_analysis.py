@@ -157,8 +157,10 @@ def collectLineMaterial(linesData,
             if ju0 not in material[0]['ju']:
                 material[0]['ju'].append(ju0)
 
-    printingFound(material[0], hangdang, shengqiang, banshi, judou,
-                  found_lines)
+    code = printingFound(material[0], hangdang, shengqiang, banshi, judou,
+                         found_lines)
+    if code == 42:
+        return 42
 
     # Delete empty lists
     score2remove = []
@@ -1898,7 +1900,8 @@ def printingFound(rubric, hd, sq, bs, ju, found_lines):
         message = '\nALERT: no lines found for any combination of the '\
             'elements inputted. The program will exit.'
         print(message)
-        exit()
+        # exit()
+        return 42
 
     to_check = [(hd, 'hd'), (sq, 'sq'), (bs, 'bs'), (ju, 'ju')]
     found = []

@@ -40,9 +40,6 @@ def get_interval_hist_single(
             pre, ext = os.path.splitext(scorePath)
             scorePath = pre + '.musicxml'
 
-        if scoreName == 'lsxp-WoZhuYe-ZhuiHanXin.xml' or scoreName == 'daeh-WeiKaiYan-DouEYuan.musicxml':
-            continue  # lol k
-
         loadedScore = converter.parse(scorePath)
         # print('\tParsing ' + scoreName)
         parts = jSA.findVoiceParts(loadedScore)
@@ -208,7 +205,7 @@ def get_melodic_density(
             scorePath = pre + '.musicxml'
         scores.append(scorePath)
         loadedScore = converter.parse(scorePath)
-        #print('\tParsing ' + scoreName)
+        # print('\tParsing ' + scoreName)
         localCount = []
         parts = jSA.findVoiceParts(loadedScore)
         # Work with each part
@@ -326,6 +323,8 @@ if __name__ == "__main__":
     linesData = '../../Jingju Scores Dataset/fixed.csv'
 
     for hd in hd_all:
+        get_pitch_hist_single(linesData, [hd])
+        get_interval_hist_single(linesData, [hd])
         get_melodic_density(linesData, [hd])  # Notes
         get_melodic_density(
             linesData, [hd], notesOrDuration='duration')  # Duration

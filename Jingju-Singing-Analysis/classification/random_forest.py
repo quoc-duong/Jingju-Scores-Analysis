@@ -42,17 +42,67 @@ CSVs = {
             '../data/shengqiang/pitch_xipi.csv',
         ]
     },
+    'banshi': {
+        'erliu': [
+            '../data/banshi/ihd_erliu.csv',
+            '../data/banshi/melodic_density_duration_erliu.csv',
+            '../data/banshi/melodic_density_notes_erliu.csv',
+            '../data/banshi/pitch_erliu.csv',
+        ],
+        'kuaiban': [
+            '../data/banshi/ihd_kuaiban.csv',
+            '../data/banshi/melodic_density_duration_kuaiban.csv',
+            '../data/banshi/melodic_density_notes_kuaiban.csv',
+            '../data/banshi/pitch_kuaiban.csv',
+        ],
+        'kuaisanyan': [
+            '../data/banshi/ihd_kuaisanyan.csv',
+            '../data/banshi/melodic_density_duration_kuaisanyan.csv',
+            '../data/banshi/melodic_density_notes_kuaisanyan.csv',
+            '../data/banshi/pitch_kuaisanyan.csv',
+        ],
+        'liushui': [
+            '../data/banshi/ihd_liushui.csv',
+            '../data/banshi/melodic_density_duration_liushui.csv',
+            '../data/banshi/melodic_density_notes_liushui.csv',
+            '../data/banshi/pitch_liushui.csv',
+        ],
+        'manban': [
+            '../data/banshi/ihd_manban.csv',
+            '../data/banshi/melodic_density_duration_manban.csv',
+            '../data/banshi/melodic_density_notes_manban.csv',
+            '../data/banshi/pitch_manban.csv',
+        ],
+        'sanyan': [
+            '../data/banshi/ihd_sanyan.csv',
+            '../data/banshi/melodic_density_duration_sanyan.csv',
+            '../data/banshi/melodic_density_notes_sanyan.csv',
+            '../data/banshi/pitch_sanyan.csv',
+        ],
+        'yuanban': [
+            '../data/banshi/ihd_yuanban.csv',
+            '../data/banshi/melodic_density_duration_yuanban.csv',
+            '../data/banshi/melodic_density_notes_yuanban.csv',
+            '../data/banshi/pitch_yuanban.csv',
+        ],
+        'zhongsanyan': [
+            '../data/banshi/ihd_zhongsanyan.csv',
+            '../data/banshi/melodic_density_duration_zhongsanyan.csv',
+            '../data/banshi/melodic_density_notes_zhongsanyan.csv',
+            '../data/banshi/pitch_zhongsanyan.csv',
+        ]
+    }
 }
 
 
 def load_data(CSVs, features):
     '''
-    Input: 
+    Input:
         CSVs - [csv_file]
         feaures - role_type, shengqiang, or banshi
     Returns:
         X - features of all the entries in the CSVs
-        y - labels 
+        y - labels
     '''
 
     X = []
@@ -62,9 +112,9 @@ def load_data(CSVs, features):
         # TODO - make this an exception instead of just a print
         print('Error: CSVs must be an object.')
         return
-    
-    column_names = None # bad code
-    
+
+    column_names = None  # bad code
+
     print(f'features to train on: {features}')
     for subtype in CSVs[features].keys():
         print(f'role type: {subtype}')
@@ -76,22 +126,26 @@ def load_data(CSVs, features):
         df_mel_notes = pd.read_csv(CSVs[features][subtype][2], index_col=0)
         df_pitch = pd.read_csv(CSVs[features][subtype][3], index_col=0)
 
-        merged_df = pd.merge(df_ihd, df_mel_den, how='inner', left_index=True, right_index=True)
-        merged_df = pd.merge(merged_df, df_mel_notes, how='inner', left_index=True, right_index=True)
-        merged_df = pd.merge(merged_df, df_pitch, how='inner', left_index=True, right_index=True)
+        merged_df = pd.merge(df_ihd, df_mel_den, how='inner',
+                             left_index=True, right_index=True)
+        merged_df = pd.merge(merged_df, df_mel_notes,
+                             how='inner', left_index=True, right_index=True)
+        merged_df = pd.merge(merged_df, df_pitch, how='inner',
+                             left_index=True, right_index=True)
 
         # Drop NaN rows
         merged_df.dropna(inplace=True)
 
         column_names = merged_df.columns.to_numpy()
 
-        for index, row in merged_df.iterrows(): 
+        for index, row in merged_df.iterrows():
             X.append(row)
             y.append(subtype)
 
     X = np.array(X)
     y = np.array(y)
-    print(f'Done loading data! \nShape of X: {X.shape} \nShape of y: {y.shape}')
+    print(
+        f'Done loading data! \nShape of X: {X.shape} \nShape of y: {y.shape}')
     return X, y, column_names
 
 
@@ -103,6 +157,7 @@ def train(X_train, y_train, model_name):
     # Save model weights to file
     joblib.dump(forest, model_name)
 
+
 def compute_importances_on_impurity(column_names, model_name):
     forest = joblib.load(model_name)
     # Bad hardcoded labels
@@ -111,10 +166,12 @@ def compute_importances_on_impurity(column_names, model_name):
     # feature_names = [f"feature {i}" for i in range(X.shape[1])]
     start_time = time.time()
     importances = forest.feature_importances_
-    std = np.std([tree.feature_importances_ for tree in forest.estimators_], axis=0)
+    std = np.std(
+        [tree.feature_importances_ for tree in forest.estimators_], axis=0)
     elapsed_time = time.time() - start_time
 
-    print(f"Elapsed time to compute the importances: {elapsed_time:.3f} seconds")
+    print(
+        f"Elapsed time to compute the importances: {elapsed_time:.3f} seconds")
 
     forest_importances = pd.Series(importances, index=column_names)
 
@@ -125,13 +182,14 @@ def compute_importances_on_impurity(column_names, model_name):
     fig.tight_layout()
     plt.show()
 
+
 def test(X_test, y_test, model_name):
     # Load from saved model weights file
     forest = joblib.load(model_name)
     y_pred = forest.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
     return accuracy
-    
+
 
 if __name__ == '__main__':
 
@@ -139,7 +197,8 @@ if __name__ == '__main__':
 
     # Data loading and preparing
     X, y, column_names = load_data(CSVs, features='role_type')
-    X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, stratify=y, random_state=42)
 
     # Training the model
     train(X_train, y_train, 'role_type_model.joblib')
@@ -152,12 +211,12 @@ if __name__ == '__main__':
     # Feature importance
     compute_importances_on_impurity(column_names, 'role_type_model.joblib')
 
-    
     # ----- Shengqiang Model -----
 
     # Data loading and preparing
     X, y, column_names = load_data(CSVs, features='shengqiang')
-    X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, stratify=y, random_state=42)
 
     # Training the model
     train(X_train, y_train, 'shengqiang_model.joblib')
@@ -169,3 +228,21 @@ if __name__ == '__main__':
 
     # Feature importance
     compute_importances_on_impurity(column_names, 'shengqiang_model.joblib')
+
+    # ----- Banshi Model -----
+
+    # Data loading and preparing
+    X, y, column_names = load_data(CSVs, features='banshi')
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, stratify=y, random_state=42)
+
+    # Training the model
+    train(X_train, y_train, 'banshi_model.joblib')
+    print('Done training banshi.')
+
+    # Testing the model
+    acc = test(X_test, y_test, 'banshi_model.joblib')
+    print(f'banshi Accuracy: {acc}')
+
+    # Feature importance
+    compute_importances_on_impurity(column_names, 'banshi_model.joblib')
